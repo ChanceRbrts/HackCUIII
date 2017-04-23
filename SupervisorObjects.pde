@@ -36,7 +36,7 @@ class SupervisorViewer{
         for (int i = 0; i < in.size(); i++){
           if (in.get(i).x+in.get(i).w >= view[0] && in.get(i).y+in.get(i).h >= view[1] && in.get(i).x <= view[0]+wid && in.get(i).y <= view[1]+hei){
             if (in.get(i).selectable && mouseX >= (in.get(i).x-view[0])*width/wid && mouseX < (in.get(i).x+in.get(i).w-view[0])*width/wid 
-                && mouseY >= (in.get(i).y-view[0])*height/hei && mouseY < (in.get(i).y+in.get(i).h-view[0])*height/hei){
+                && mouseY >= (in.get(i).y-view[1])*height/hei && mouseY < (in.get(i).y+in.get(i).h-view[1])*height/hei){
                   addToLog(in.get(i).description+"\n ", new float[]{0,0,0}, false);
             }
           }
@@ -109,5 +109,27 @@ class TypingStuff{
     else fill(50, 50, 50);
     text(currentStr, 16*width/wid, (height-24)*height/hei);
     
+  }
+}
+
+class Countdown extends Instance{
+  boolean triggered;
+  float countdown, visible;
+  public Countdown(int X, int Y, int W, int H, float timer){
+    super(X,Y);
+    w = W*32;
+    h = H*32;
+    name = "Countdown";
+    tag = "Boom";
+    description = "Better start running fast!";
+    selectable = false;
+    countdown = timer;
+  }
+  
+  public void update(Player p, float deltaTime){
+    super.update(p, deltaTime);
+    if (!triggered && x+dX*deltaTime < p.x+p.w+p.dX*deltaTime && x+w+dX*deltaTime > p.x+p.dX*deltaTime && y+dY*deltaTime < p.y+p.h+p.dY*deltaTime && y+h+dY*deltaTime > p.y+p.dY*deltaTime){
+      
+    }
   }
 }

@@ -36,8 +36,8 @@ class Instance {
   }
   
   public float[] updateViewsFromSelf(float[] view, float[] bounds){
-    view[0] = x+w/2;
-    view[1] = y+h/2;
+    view[0] = x-wid/2;
+    view[1] = y-hei/2;
     if (view[0] <= 0) view[0] = 0;
     else if (view[0] >= bounds[0]-wid/2) view[0] = bounds[0]-wid/2;
     if (view[1] <= 0) view[1] = 0;
@@ -51,6 +51,7 @@ class Instance {
     if (objMan != null && ID == 0){
       objMan.nextID++;
       ID = objMan.nextID;
+      if (name == "Door") println(ID);
     }
   }
   

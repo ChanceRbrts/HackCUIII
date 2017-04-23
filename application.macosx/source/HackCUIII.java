@@ -47,9 +47,6 @@ public void setup(){
   keyHeld = new boolean[10];
   textAlign(LEFT,TOP);
   typed = new ArrayList<Character>();
-  //serv = new Server(this, 7575+gameMode);
-  //clien = new Client(this, "127.0.0.1", 7575+gameMode);
-  //clien = new Client(this, "127.0.0.1", 7575+((gameMode+1)%2));
 }
 
 public void draw(){
@@ -75,7 +72,8 @@ public void draw(){
     kPress[i] = keyPress[i];
     kHeld[i] = keyHeld[i];
   }
-  if (started) objMan.update(kPress, kHeld, deltaTime);
+  if (started) 
+    objMan.update(kPress, kHeld, deltaTime);
   objMan.draw();
   logDraw(deltaTime);
   keyReset(kPress);
@@ -253,8 +251,8 @@ class Instance {
   }
   
   public float[] updateViewsFromSelf(float[] view, float[] bounds){
-    view[0] = x+w/2;
-    view[1] = y+h/2;
+    view[0] = x-wid/2;
+    view[1] = y-hei/2;
     if (view[0] <= 0) view[0] = 0;
     else if (view[0] >= bounds[0]-wid/2) view[0] = bounds[0]-wid/2;
     if (view[1] <= 0) view[1] = 0;
@@ -268,6 +266,7 @@ class Instance {
     if (objMan != null && ID == 0){
       objMan.nextID++;
       ID = objMan.nextID;
+      if (name == "Door") println(ID);
     }
   }
   
@@ -743,13 +742,15 @@ class ObjectManager{
   private ArrayList<Instance> instances;
   private int room;
   public int nextID;
+  private String[] roomLoad;
   private Instance player;
   private SupervisorViewer supView;
   private TypingStuff typStf;
   public Inventory inv;
   public PlayerInteractive plaIn;
   public ObjectManager(){
-    room = 0;
+    roomLoad = new String[]{"PresentationArea"};
+    room = 1;
     nextID = 1;
     view = new float[2];
     bounds = new float[2];
@@ -794,12 +795,13 @@ class ObjectManager{
         instances.get(i).finishUpdate(deltaTime);
         if (instances.get(i).destroyed || (instances.get(i).tag == "Item" && ((Item)(instances.get(i))).inInventory)){
           if (instances.get(i).destroyed){
-            serv.write("Instance: Destroyed " + instances.get(i).ID + "\n");
+            serv.write("Instance: Destroyed " + (instances.get(i).ID) + "\n");
           }
           instances.remove(i);
           i--;
         }
       }
+      if (gameMode == 0) view = player.updateViewsFromSelf(view, bounds);
       if (!inv.focus) inv.update(deltaTime);
       else inv.update(keyPress, deltaTime);
     }
@@ -852,6 +854,43 @@ class ObjectManager{
       instances.add(plaIn);
       instances.add(new Solid(wid/48, hei/48));
       instances.add(new Door(2,5,true));
+    }
+    else if (room > 0 && room <= roomLoad.length){
+      String[] loading = loadStrings("Rooms/"+roomLoad[room-1]+".txt");
+      int numberOfCabinets = 0;
+      bounds[0] = 32*loading[0].length();
+      bounds[1] = 32*loading.length;
+      for (int y = 0; y < loading.length; y++){
+        for (int x = 0; x < loading[y].length(); x++){
+          if (loading[y].charAt(x) == 'P'){
+            player = new Player(x,y);
+            plaIn = ((Player)player).plaIn;
+            instances.add(player);
+            instances.add(plaIn);
+          }
+          else if (loading[y].charAt(x) == 'S') instances.add(new Solid(x,y));
+          else if (loading[y].charAt(x) == 'L') instances.add(new Door(x,y,true));
+          else if (loading[y].charAt(x) == 'D') instances.add(new Door(x,y,false));
+          else if (loading[y].charAt(x) == 'K') instances.add(new Key(x,y,"Door"));
+          else if (loading[y].charAt(x) == 'B') instances.add(new Bomb(x, y, 5, 10, true, false));
+          else if (loading[y].charAt(x) == 'C'){
+            Cabinet c = new Cabinet(x,y);
+            if (room == 1){
+              if (numberOfCabinets == 0){
+                c.items.add(new Key(0, 0, "Door"));
+                c.items.add(new Key(0, 0, "Door"));
+                c.items.add(new Key(0, 0, "Door"));
+                c.items.add(new Key(0, 0, "Door"));
+              }
+              else if (numberOfCabinets == 1){
+                c.items.add(new Bomb(0, 0, 2, 3, false, false));
+              }
+            }
+            numberOfCabinets++;
+            instances.add(c);
+          }
+        }
+      }
     }
   }
   
@@ -941,6 +980,7 @@ class ObjectManager{
       else if (infos[i].length() > 10 && infos[i].substring(0,10).equals("Instance: ")){
         String[] instructions = splitTokens(infos[i].substring(10), " ");
         if (instructions[0].equals("Destroyed")){
+          println(infos[i]);
           for (int j = 0; j < instances.size(); j++){
             if (instances.get(j).ID == PApplet.parseInt(instructions[1])){
               instances.remove(j);
@@ -990,7 +1030,7 @@ class SupervisorViewer{
         for (int i = 0; i < in.size(); i++){
           if (in.get(i).x+in.get(i).w >= view[0] && in.get(i).y+in.get(i).h >= view[1] && in.get(i).x <= view[0]+wid && in.get(i).y <= view[1]+hei){
             if (in.get(i).selectable && mouseX >= (in.get(i).x-view[0])*width/wid && mouseX < (in.get(i).x+in.get(i).w-view[0])*width/wid 
-                && mouseY >= (in.get(i).y-view[0])*height/hei && mouseY < (in.get(i).y+in.get(i).h-view[0])*height/hei){
+                && mouseY >= (in.get(i).y-view[1])*height/hei && mouseY < (in.get(i).y+in.get(i).h-view[1])*height/hei){
                   addToLog(in.get(i).description+"\n ", new float[]{0,0,0}, false);
             }
           }
@@ -1063,6 +1103,28 @@ class TypingStuff{
     else fill(50, 50, 50);
     text(currentStr, 16*width/wid, (height-24)*height/hei);
     
+  }
+}
+
+class Countdown extends Instance{
+  boolean triggered;
+  float countdown, visible;
+  public Countdown(int X, int Y, int W, int H, float timer){
+    super(X,Y);
+    w = W*32;
+    h = H*32;
+    name = "Countdown";
+    tag = "Boom";
+    description = "Better start running fast!";
+    selectable = false;
+    countdown = timer;
+  }
+  
+  public void update(Player p, float deltaTime){
+    super.update(p, deltaTime);
+    if (!triggered && x+dX*deltaTime < p.x+p.w+p.dX*deltaTime && x+w+dX*deltaTime > p.x+p.dX*deltaTime && y+dY*deltaTime < p.y+p.h+p.dY*deltaTime && y+h+dY*deltaTime > p.y+p.dY*deltaTime){
+      
+    }
   }
 }
   public void settings() {  size(640,480); }

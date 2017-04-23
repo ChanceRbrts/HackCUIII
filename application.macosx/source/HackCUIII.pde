@@ -29,9 +29,6 @@ void setup(){
   keyHeld = new boolean[10];
   textAlign(LEFT,TOP);
   typed = new ArrayList<Character>();
-  //serv = new Server(this, 7575+gameMode);
-  //clien = new Client(this, "127.0.0.1", 7575+gameMode);
-  //clien = new Client(this, "127.0.0.1", 7575+((gameMode+1)%2));
 }
 
 void draw(){
@@ -57,7 +54,8 @@ void draw(){
     kPress[i] = keyPress[i];
     kHeld[i] = keyHeld[i];
   }
-  if (started) objMan.update(kPress, kHeld, deltaTime);
+  if (started) 
+    objMan.update(kPress, kHeld, deltaTime);
   objMan.draw();
   logDraw(deltaTime);
   keyReset(kPress);
