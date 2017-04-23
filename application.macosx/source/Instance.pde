@@ -51,7 +51,6 @@ class Instance {
     if (objMan != null && ID == 0){
       objMan.nextID++;
       ID = objMan.nextID;
-      if (name == "Door") println(ID);
     }
   }
   

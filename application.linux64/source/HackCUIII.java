@@ -266,7 +266,6 @@ class Instance {
     if (objMan != null && ID == 0){
       objMan.nextID++;
       ID = objMan.nextID;
-      if (name == "Door") println(ID);
     }
   }
   
@@ -737,7 +736,7 @@ class Bomb extends Item{
 class ObjectManager{
   private float[] view, bounds;
   private float blackout, maxBlackout;
-  private ArrayList<Instance> instances;
+  private ArrayList<Instance> instances, instances2;
   private int room;
   public int nextID;
   private String[] roomLoad;
@@ -812,12 +811,20 @@ class ObjectManager{
       }
     }
     if (gameMode == 1){
+      for (int i = 0; i < instances2.size(); i++){
+        instances2.get(i).update(player, deltaTime);
+      }
       view = supView.update(keyHeld, view, bounds, deltaTime);
       typStf.update();
     }
   }
   
   public void draw(){
+    if (gameMode == 1){
+      for (int i = 0; i < instances2.size(); i++){
+        instances2.get(i).draw(view[0], view[1]);
+       }
+    }
     for (int i = 0; i < instances.size(); i++){
       Instance in = instances.get(i);
       if (in.x+in.w >= view[0] && in.y+in.h >= view[1] && in.x <= view[0]+wid && in.y <= view[1]+hei){
@@ -837,6 +844,7 @@ class ObjectManager{
   public void loadRoom(int room){
     nextID = 0;
     instances = new ArrayList<Instance>();
+    instances2 = new ArrayList<Instance>();
     if (room == 0){
       player = new Player(wid/64, hei/64);
       plaIn = ((Player)player).plaIn;
@@ -890,7 +898,7 @@ class ObjectManager{
         }
       }
       if (room == 1){
-        instances.add(new Countdown(21,1,8,12,30));
+        instances2.add(new Countdown(21,1,8,13,30));
       }
     }
   }
@@ -1122,7 +1130,7 @@ class Countdown extends Instance{
     isSolid = false;
   }
   
-  public void update(Player p, float deltaTime){
+  public void update(Instance p, float deltaTime){
     super.update(p, deltaTime);
     if (!triggered && x+dX*deltaTime < p.x+p.w+p.dX*deltaTime && x+w+dX*deltaTime > p.x+p.dX*deltaTime && y+dY*deltaTime < p.y+p.h+p.dY*deltaTime && y+h+dY*deltaTime > p.y+p.dY*deltaTime){
       triggered = true;
@@ -1134,7 +1142,7 @@ class Countdown extends Instance{
       if (countdown <= 0){
         destroyed = true;
         if (x+dX*deltaTime < p.x+p.w+p.dX*deltaTime && x+w+dX*deltaTime > p.x+p.dX*deltaTime && y+dY*deltaTime < p.y+p.h+p.dY*deltaTime && y+h+dY*deltaTime > p.y+p.dY*deltaTime){
-          p.hp -= 5;
+          ((Player)p).hp -= 5;
           serv.write("PlayerHP: Down 5\n");
         }
       }
@@ -1142,13 +1150,11 @@ class Countdown extends Instance{
   }
   
   public void draw(float viewX, float viewY){
-    if (gameMode == 1){
-      fill(255,0,0,visible*255);
-      rect((x-viewX)*wid/width, y-viewY*height/hei, w*width/wid, h*height/hei);
-      fill(255,255,255,visible*255);
-      textSize(64*width/wid);
-      text(str(PApplet.parseInt(countdown)), (x-viewX+w/2-64)*width/wid, (y-viewY+h/2-32)*height/hei);
-    }
+     fill(255,0,0,visible*255);
+     rect((x-viewX)*wid/width, y-viewY*height/hei, w*width/wid, h*height/hei);
+     fill(255,255,255,visible*255);
+     textSize(64*width/wid);
+     text(str(PApplet.parseInt(countdown)), (x-viewX+w/2-32)*width/wid, (y-viewY+h/2-32)*height/hei);
   }
 }
   public void settings() {  size(640,480); }

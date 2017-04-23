@@ -1,7 +1,7 @@
 class ObjectManager{
   private float[] view, bounds;
   private float blackout, maxBlackout;
-  private ArrayList<Instance> instances;
+  private ArrayList<Instance> instances, instances2;
   private int room;
   public int nextID;
   private String[] roomLoad;
@@ -76,12 +76,20 @@ class ObjectManager{
       }
     }
     if (gameMode == 1){
+      for (int i = 0; i < instances2.size(); i++){
+        instances2.get(i).update(player, deltaTime);
+      }
       view = supView.update(keyHeld, view, bounds, deltaTime);
       typStf.update();
     }
   }
   
   void draw(){
+    if (gameMode == 1){
+      for (int i = 0; i < instances2.size(); i++){
+        instances2.get(i).draw(view[0], view[1]);
+       }
+    }
     for (int i = 0; i < instances.size(); i++){
       Instance in = instances.get(i);
       if (in.x+in.w >= view[0] && in.y+in.h >= view[1] && in.x <= view[0]+wid && in.y <= view[1]+hei){
@@ -101,6 +109,7 @@ class ObjectManager{
   void loadRoom(int room){
     nextID = 0;
     instances = new ArrayList<Instance>();
+    instances2 = new ArrayList<Instance>();
     if (room == 0){
       player = new Player(wid/64, hei/64);
       plaIn = ((Player)player).plaIn;
@@ -154,7 +163,7 @@ class ObjectManager{
         }
       }
       if (room == 1){
-        instances.add(new Countdown(21,1,8,12,30));
+        instances2.add(new Countdown(21,1,8,13,30));
       }
     }
   }
