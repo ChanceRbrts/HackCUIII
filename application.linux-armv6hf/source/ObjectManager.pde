@@ -28,7 +28,7 @@ class ObjectManager{
   
   void update(boolean[] keyPress, boolean[] keyHeld, float deltaTime){
     if (((Player)player).hp > 0){
-      if (keyPress[5] && inv.items.size() > 0){
+      if (keyPress[5] && inv.items.size() > 0 && gameMode == 0){
         inv.focus = !inv.focus;
       }
       //Update Everyone Individually...
