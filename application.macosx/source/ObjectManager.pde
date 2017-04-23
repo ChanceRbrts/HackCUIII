@@ -190,12 +190,13 @@ class ObjectManager{
         }
       }
       else if (infos[i].length() > 10 && infos[i].substring(0,10).equals("PlayerHP: ")){
+        print(infos[i]);
         String[] instructions = splitTokens(infos[i].substring(10), " ");
-        if (instructions[1].equals("Down")){
-          ((Player)player).hp -= float(instructions[2]);
+        if (instructions[0].equals("Down")){
+          ((Player)player).hp -= float(instructions[1]);
         }
-        else if (instructions[1].equals("Up")){
-          ((Player)player).hp += float(instructions[2]);
+        else if (instructions[0].equals("Up")){
+          ((Player)player).hp += float(instructions[1]);
         }
       }
       else if (infos[i].length() > 10 && infos[i].substring(0,10).equals("Instance: ")){

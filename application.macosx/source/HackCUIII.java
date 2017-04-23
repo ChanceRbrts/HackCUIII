@@ -19,6 +19,7 @@ public class HackCUIII extends PApplet {
 
 
 ObjectManager objMan;
+boolean started;
 boolean[] keyPress, keyHeld;
 int[] keyLimit;
 float startTime, endTime;
@@ -34,7 +35,7 @@ Client clien;
 String info;
 public void setup(){
   
-  gameMode = 0;
+  gameMode = -1;
   wid = 640;
   hei = 480;
   logTime = 5;
@@ -46,20 +47,25 @@ public void setup(){
   keyHeld = new boolean[10];
   textAlign(LEFT,TOP);
   typed = new ArrayList<Character>();
-  serv = new Server(this, 7575+gameMode);
+  //serv = new Server(this, 7575+gameMode);
   //clien = new Client(this, "127.0.0.1", 7575+gameMode);
-  clien = new Client(this, "127.0.0.1", 7575+((gameMode+1)%2));
+  //clien = new Client(this, "127.0.0.1", 7575+((gameMode+1)%2));
 }
 
 public void draw(){
   background(200);
-  if (!clien.active()){
-    clien = new Client(this, "127.0.0.1", 7575+((gameMode+1)%2));
-  }
-  if (clien.available() > 0){
-    info = clien.readString();
-    objMan.lookThroughServer(info);
-  }
+  if (gameMode == 0 || gameMode == 1){
+    if (!clien.active()){
+      if (started) exit();
+      clien = new Client(this, "127.0.0.1", 7575+((gameMode+1)%2));
+    }
+    else{
+      started = true;
+    }
+    if (clien.available() > 0){
+      info = clien.readString();
+      objMan.lookThroughServer(info);
+    }
   endTime = System.nanoTime()/1000000000.0f;
   if (startTime == 0) startTime = endTime;
   float deltaTime = endTime-startTime;
@@ -69,11 +75,22 @@ public void draw(){
     kPress[i] = keyPress[i];
     kHeld[i] = keyHeld[i];
   }
-  objMan.update(kPress, kHeld, deltaTime);
+  if (started) objMan.update(kPress, kHeld, deltaTime);
   objMan.draw();
   logDraw(deltaTime);
   keyReset(kPress);
   startTime = endTime;
+  }
+  else if (gameMode == -1){
+    background(0);
+    drawIntroRoom();
+    if (keyPress[0] || keyPress[1]){
+      if (!keyPress[1]) gameMode = 0;
+      else if (!keyPress[0]) gameMode = 1;
+      serv = new Server(this, 7575+gameMode);
+      clien = new Client(this, "127.0.0.1", 7575+((gameMode+1)%2));
+    }
+  }
   while (typed.size() > 0){
     typed.remove(0);
   }
@@ -185,6 +202,18 @@ public void logDraw(float deltaTime){
       text(log.get(i), (wid/8)*width/wid, (hei/8+i*20)*height/hei);
     }
   }
+  if (!started){
+    fill(0,0,0);
+    if (gameMode == 0) text("Waiting for the observer...", (wid/8)*width/wid, (hei/8-20)*height/hei);
+    else if (gameMode == 1) text("Waiting for the player...", (wid/8)*width/wid, (hei/8-20)*height/hei);
+  }
+}
+
+public void drawIntroRoom(){
+  fill(255);
+  textSize(32*height/hei);
+  text("Press Left to be the Player", width/8, height/2-32*height/hei);
+  text("Press Right to be the Observer", width/8, height/2+32*height/hei);
 }
 class Instance {
   public float x, y, w, h, dX, dY;
@@ -900,12 +929,13 @@ class ObjectManager{
         }
       }
       else if (infos[i].length() > 10 && infos[i].substring(0,10).equals("PlayerHP: ")){
+        print(infos[i]);
         String[] instructions = splitTokens(infos[i].substring(10), " ");
-        if (instructions[1].equals("Down")){
-          ((Player)player).hp -= PApplet.parseFloat(instructions[2]);
+        if (instructions[0].equals("Down")){
+          ((Player)player).hp -= PApplet.parseFloat(instructions[1]);
         }
-        else if (instructions[1].equals("Up")){
-          ((Player)player).hp += PApplet.parseFloat(instructions[2]);
+        else if (instructions[0].equals("Up")){
+          ((Player)player).hp += PApplet.parseFloat(instructions[1]);
         }
       }
       else if (infos[i].length() > 10 && infos[i].substring(0,10).equals("Instance: ")){
