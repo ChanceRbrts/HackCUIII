@@ -64,7 +64,7 @@ class Bomb extends Item{
         }
         else{ //>:)
           ((Player)(objMan.player)).hp -= 5;
-          serv.write("PlayerHP: Down 5");
+          serv.write("PlayerHP: Down 5\n");
         }
         destroyed = true;
       }

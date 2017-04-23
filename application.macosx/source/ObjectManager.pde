@@ -153,6 +153,9 @@ class ObjectManager{
           }
         }
       }
+      if (room == 1){
+        instances.add(new Countdown(21,1,8,12,30));
+      }
     }
   }
   

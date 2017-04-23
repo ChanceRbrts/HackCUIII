@@ -129,7 +129,29 @@ class Countdown extends Instance{
   public void update(Player p, float deltaTime){
     super.update(p, deltaTime);
     if (!triggered && x+dX*deltaTime < p.x+p.w+p.dX*deltaTime && x+w+dX*deltaTime > p.x+p.dX*deltaTime && y+dY*deltaTime < p.y+p.h+p.dY*deltaTime && y+h+dY*deltaTime > p.y+p.dY*deltaTime){
-      
+      triggered = true;
+    }
+    else if (triggered){
+      visible += deltaTime;
+      if (visible > 1) visible = 1;
+      countdown -= deltaTime;
+      if (countdown <= 0){
+        destroyed = true;
+        if (x+dX*deltaTime < p.x+p.w+p.dX*deltaTime && x+w+dX*deltaTime > p.x+p.dX*deltaTime && y+dY*deltaTime < p.y+p.h+p.dY*deltaTime && y+h+dY*deltaTime > p.y+p.dY*deltaTime){
+          p.hp -= 5;
+          serv.write("PlayerHP: Down 5\n");
+        }
+      }
+    }
+  }
+  
+  public void draw(float viewX, float viewY){
+    if (gameMode == 1){
+      fill(255,0,0,visible*255);
+      rect((x-viewX)*wid/width, y-viewY*height/hei, w*width/wid, h*height/hei);
+      fill(255,255,255,visible*255);
+      textSize(64*width/wid);
+      text(str(int(countdown)), (x-viewX+w/2-64)*width/wid, (y-viewY+h/2-32)*height/hei);
     }
   }
 }
