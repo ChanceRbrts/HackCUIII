@@ -124,6 +124,7 @@ class Countdown extends Instance{
     description = "Better start running fast!";
     selectable = false;
     countdown = timer;
+    isSolid = false;
   }
   
   public void update(Player p, float deltaTime){

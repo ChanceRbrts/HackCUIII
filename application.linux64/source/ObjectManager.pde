@@ -71,7 +71,7 @@ class ObjectManager{
       blackout += deltaTime;
       if (blackout > maxBlackout){
         blackout = 0;
-        loadRoom(0);
+        loadRoom(room);
         inv = new Inventory();
       }
     }

@@ -656,8 +656,6 @@ class Cabinet extends Interactable{
   }
   
 }
-
-
 class Item extends Instance{
   boolean inInventory, canRemove;
   public Item(float X, float Y){
@@ -809,7 +807,7 @@ class ObjectManager{
       blackout += deltaTime;
       if (blackout > maxBlackout){
         blackout = 0;
-        loadRoom(0);
+        loadRoom(room);
         inv = new Inventory();
       }
     }
@@ -1121,6 +1119,7 @@ class Countdown extends Instance{
     description = "Better start running fast!";
     selectable = false;
     countdown = timer;
+    isSolid = false;
   }
   
   public void update(Player p, float deltaTime){
